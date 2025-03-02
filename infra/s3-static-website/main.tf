@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 variable "bucket_name" {
-    type = "string"
+    type = string
 }
 
 resource "aws_s3_bucket" "static_site_bucket" {
