@@ -31,6 +31,7 @@ jobs:
           cd infra
           cd s3-static-website
           terraform init
+          terraform validate
           terraform apply -auto-approve -var="bucket_name=${{ env.BUCKET_NAME }}"
       
       - name: Add Comment
