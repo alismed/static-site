@@ -50,8 +50,14 @@ jobs:
           aws s3api create-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1
           aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
 
-      - name: Add Comment at Pull Request
-        run: |
-            curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -d '{"body":"O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!"}' \
-            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments"
+      - name: Add Comment at GitHub Pull Request
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.createComment({
+              issue_number: ${{ github.event.pull_request.number }},
+              owner: ${{ github.repository_owner }},
+              repo: ${{ github.event.repository.name }},
+              body: `O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!`
+            })
