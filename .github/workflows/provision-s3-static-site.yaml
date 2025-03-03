@@ -48,9 +48,10 @@ jobs:
         if: ${{ env.DESTROY_BUCKET != 'true' }}
         run: |
           aws s3api create-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1
-          aws s3api put-bucket-policy --bucket ${{ env.BUCKET_NAME }} --policy file://infra/s3-static-website/policy.json
+          aws s3api put-bucket-policy --bucket ${{ env.BUCKET_NAME }} 
           aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
-      
+#          aws s3api put-bucket-policy --bucket ${{ env.BUCKET_NAME }} --policy file://infra/s3-static-website/policy.json      
+
       - name: Add Comment
         run: gh pull_request comment "$NUMBER" --repo "$REPO" --body "$BODY"
         env:
