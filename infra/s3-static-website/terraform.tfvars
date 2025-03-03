@@ -1,2 +1,2 @@
-bucket_name     = "my-site_alismed"
+bucket_name     = "my-site-alismed"
 destroy_bucket  = false
