@@ -1,4 +1,4 @@
-name: Create S3 Statis Site
+name: Create S3 Static Site
 
 on:
   pull_request:
@@ -43,20 +43,15 @@ jobs:
         if: ${{ env.DESTROY_BUCKET == 'true' }}
         run: |
           aws s3api delete-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1 || true
-         
+
       - name: Create Bucket if variable is not set
         if: ${{ env.DESTROY_BUCKET != 'true' }}
         run: |
           aws s3api create-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1
-          aws s3api put-bucket-policy --bucket ${{ env.BUCKET_NAME }} --policy file://infra/s3-static-website/policy.json
           aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
-      
-      - name: Add Comment
-        run: gh pull_request comment "$NUMBER" --repo "$REPO" --body "$BODY"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          NUMBER: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
-          BODY: >
-            O bucket ${{ env.BUCKET_NAME }} 
-            foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!
+
+      - name: Add Comment at Pull Request
+        run: |
+            curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d '{"body":"O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!"}' \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments"

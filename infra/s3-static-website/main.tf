@@ -42,3 +42,10 @@ resource "aws_s3_bucket_ownership_controls" "static_site_bucket" {
     object_ownership = "BucketOwnerPreferred"
   }
 }
+
+resource "aws_s3_bucket_policy" "static_site_bucket_policy" {
+  count  = var.destroy_bucket ? 0 : 1
+  bucket = aws_s3_bucket.static_site_bucket[0].id
+
+  policy = file("policy-s3-static-website.json")
+}
