@@ -9,6 +9,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: write
 
     steps:
       - name: Checkout Repository
@@ -40,36 +42,43 @@ jobs:
           echo "DESTROY_BUCKET=$DESTROY_BUCKET" >> $GITHUB_ENV
 
       - name: Add Comment at GitHub Pull Request
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.issues.createComment({
-              issue_number: ${{ github.event.pull_request.number }},
-              owner: ${{ github.repository_owner }},
-              repo: ${{ github.event.repository.name }},
-              body: `O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!`
-            })
+        uses: actions/checkout@v2
+ 
+      - name: Set variable_example
+        run: echo "variable_example=thomasthornton.cloud" >> $GITHUB_ENV
 
-      - name: Destroy Bucket if variable is set
-        if: ${{ env.DESTROY_BUCKET == 'true' }}
-        run: |
-          aws s3api delete-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1 || true
+#      - name: Add comment to PR
+#        uses: actions/github-script@v7
+#        with:
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
+#          script: |
+#            github.rest.issues.createComment({
+#              owner: context.repo.owner,
+#              issue_number: context.issue.number,
+#             repo: context.repo.repo,
+#              body: process.env.variable_example
+#            })
 
-      - name: Create Bucket if variable is not set
-        if: ${{ env.DESTROY_BUCKET != 'true' }}
-        run: |
-          aws s3api create-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1
-          aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
 
-      - name: Add Comment at GitHub Pull Request
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.issues.createComment({
-              issue_number: ${{ github.event.pull_request.number }},
-              owner: ${{ github.repository_owner }},
-              repo: ${{ github.event.repository.name }},
-              body: `O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!`
-            })
+#     - name: Destroy Bucket if variable is set
+#        if: ${{ env.DESTROY_BUCKET == 'true' }}
+#        run: |
+#          aws s3api delete-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1 || true
+
+#      - name: Create Bucket if variable is not set
+#        if: ${{ env.DESTROY_BUCKET != 'true' }}
+#        run: |
+#          aws s3api create-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1
+#          aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
+#
+#      - name: Add Comment at GitHub Pull Request
+#        uses: actions/github-script@v4
+#        with:
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
+#          script: |
+#            github.issues.createComment({
+#              issue_number: ${{ github.event.pull_request.number }},
+#              owner: ${{ github.repository_owner }},
+#              repo: ${{ github.event.repository.name }},
+#              body: `O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!`
+#            })
