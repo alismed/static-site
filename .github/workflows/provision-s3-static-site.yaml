@@ -45,10 +45,11 @@ jobs:
           aws s3api delete-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1 || true
 
       - name: Cat policy file
-        run: pwd
-        run: cat infra/s3-static-website/policy-s3-static-website.json
-        run: cat ../infra/s3-static-website/policy-s3-static-website.json
-        run: cat ../../infra/s3-static-website/policy-s3-static-website.json
+        run: |
+          pwd
+          cat infra/s3-static-website/policy-s3-static-website.json
+          cat ../infra/s3-static-website/policy-s3-static-website.json
+          cat ../../infra/s3-static-website/policy-s3-static-website.json
 
       - name: Create Bucket if variable is not set
         if: ${{ env.DESTROY_BUCKET != 'true' }}
