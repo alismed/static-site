@@ -1,9 +1,8 @@
 name: Create S3 Statis Site
 
-on:
-  issues:
-    type:
-      -opened
+pull_request:
+  branches:
+    - main
 
 jobs:
   deploy:
@@ -26,19 +25,21 @@ jobs:
           echo "Description: $DESCRIPTION"
           echo "DESCRIPTION=$DESCRIPTION" >> $GITHUB_ENV
 
-#      - name: Extract Bucket Name from Issue
-#        run: |
-#          export BUCKET_NAME=$(echo "${{ github.event.issue.title }}")
-#          echo "Bucket Name: $BUCKET_NAME"
-#          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
-      
-#      - name: Run Terraform
-#        run: |
-#          cd infra
-#          cd s3-static-website
-#          terraform init
-#          terraform validate
-#          terraform apply -auto-approve -var="bucket_name=${{ env.BUCKET_NAME }}"
+      - name: Destroy Bucket if variable is set
+        if: ${{ env.DESTROY_BUCKET == 'true' }}
+        run: |
+          aws s3api delete-bucket --bucket ${{ github.event.issue.number }} --region us-east-1 || true
+        env:
+          BUCKET_NAME: ${{ github.event.issue.number }}
+          
+      - name: Create Bucket if variable is not set
+        if: ${{ env.DESTROY_BUCKET != 'true' }}
+        run: |
+          aws s3api create-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1
+          aws s3api put-bucket-policy --bucket ${{ env.BUCKET_NAME }} --policy file://infra/s3-static-website/policy.json
+          aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
+        env:
+          BUCKET_NAME: ${{ github.event.issue.number }}      
       
       - name: Add Comment
         run: gh issue comment "$NUMBER" --repo "$REPO" --body "$BODY"
@@ -47,5 +48,5 @@ jobs:
           NUMBER: ${{ github.event.issue.number }}
           REPO: ${{ github.repository }}
           BODY: >
-            O Bucket S# foi criado com sucesso!
-
+            O bucket ${{ env.BUCKET_NAME }} 
+            foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!
