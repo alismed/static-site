@@ -42,7 +42,7 @@ jobs:
       - name: Destroy Bucket if variable is set
         if: ${{ env.DESTROY_BUCKET == 'true' }}
         run: |
-          aws s3api delete-bucket --bucket ${{ BUCKET_NAME }} --region us-east-1 || true
+          aws s3api delete-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1 || true
          
       - name: Create Bucket if variable is not set
         if: ${{ env.DESTROY_BUCKET != 'true' }}
