@@ -2,7 +2,7 @@ name: Create S3 Statis Site
 
 on:
   pull_request:
-    types: merged
+    types: opened
     branches:
       - main
 
