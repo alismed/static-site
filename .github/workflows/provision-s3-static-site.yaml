@@ -33,27 +33,23 @@ jobs:
           echo "Bucket Name: $BUCKET_NAME"
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
 
-      - name: Get Destroy Bucket from Pull Request
+      - name: Get Destroy Bucket from tfvars
         run: |
-          export DESTROY_BUCKET=$(echo "${{ github.event.pull_request.body }}" | grep -i 'destroy' | wc -l)
+          export DESTROY_BUCKET=$(cat infra/s3-static-website/terraform.tfvars | grep destroy_bucket | cut -d'=' -f2 | tr -d '[:space:]')
           echo "Destroy Bucket: $DESTROY_BUCKET"
           echo "DESTROY_BUCKET=$DESTROY_BUCKET" >> $GITHUB_ENV
 
       - name: Destroy Bucket if variable is set
         if: ${{ env.DESTROY_BUCKET == 'true' }}
         run: |
-          aws s3api delete-bucket --bucket ${{ github.event.pull_request.number }} --region us-east-1 || true
-        env:
-          BUCKET_NAME: ${{ github.event.pull_request.number }}
-          
+          aws s3api delete-bucket --bucket ${{ BUCKET_NAME }} --region us-east-1 || true
+         
       - name: Create Bucket if variable is not set
         if: ${{ env.DESTROY_BUCKET != 'true' }}
         run: |
           aws s3api create-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1
           aws s3api put-bucket-policy --bucket ${{ env.BUCKET_NAME }} --policy file://infra/s3-static-website/policy.json
           aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
-        env:
-          BUCKET_NAME: ${{ github.event.pull_request.number }}      
       
       - name: Add Comment
         run: gh pull_request comment "$NUMBER" --repo "$REPO" --body "$BODY"
