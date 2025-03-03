@@ -1,4 +1,4 @@
-name: Create S3 Statis Site
+name: Create S3 Static Site
 
 on:
   pull_request:
@@ -44,17 +44,11 @@ jobs:
         run: |
           aws s3api delete-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1 || true
 
-      - name: Cat policy file
-        run: |
-          pwd
-          ls -la infra/
-          cat file://infra/policy-s3-static-website.json
-
       - name: Create Bucket if variable is not set
         if: ${{ env.DESTROY_BUCKET != 'true' }}
         run: |
           aws s3api create-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1
-          aws s3api put-bucket-policy --bucket ${{ env.BUCKET_NAME }} --policy file://infra/policy-s3-static-website.json
+          aws s3api put-bucket-policy --bucket ${{ env.BUCKET_NAME }} --policy file://infra/s3-static-website/policy-s3-static-website.json
           aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
 
       - name: Add Comment
