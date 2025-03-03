@@ -40,11 +40,19 @@ jobs:
           export DESTROY_BUCKET=$(cat infra/s3-static-website/terraform.tfvars | grep destroy_bucket | cut -d'=' -f2 | tr -d '[:space:]')
           echo "Destroy Bucket: $DESTROY_BUCKET"
           echo "DESTROY_BUCKET=$DESTROY_BUCKET" >> $GITHUB_ENV
-
-      - name: Add Comment at GitHub Pull Request
-        uses: actions/checkout@v2
  
-      - name: Set msg
+      - name: Destroy Bucket if variable is set
+        if: ${{ env.DESTROY_BUCKET == 'true' }}
+        run: |
+          aws s3api delete-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1 || true
+
+      - name: Create Bucket if variable is not set
+        if: ${{ env.DESTROY_BUCKET != 'true' }}
+        run: |
+          aws s3api create-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1
+          aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
+
+      - name: Set PR msg
         run: |
           echo "MSG=O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!" >> $GITHUB_ENV
 
@@ -59,26 +67,3 @@ jobs:
               repo: context.repo.repo,
               body: `${{ env.MSG }}`
             })
-
-#     - name: Destroy Bucket if variable is set
-#        if: ${{ env.DESTROY_BUCKET == 'true' }}
-#        run: |
-#          aws s3api delete-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1 || true
-
-#      - name: Create Bucket if variable is not set
-#        if: ${{ env.DESTROY_BUCKET != 'true' }}
-#        run: |
-#          aws s3api create-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1
-#          aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
-#
-#      - name: Add Comment at GitHub Pull Request
-#        uses: actions/github-script@v4
-#        with:
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
-#          script: |
-#            github.issues.createComment({
-#              issue_number: ${{ github.event.pull_request.number }},
-#              owner: ${{ github.repository_owner }},
-#              repo: ${{ github.event.repository.name }},
-#              body: `O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!`
-#            })
