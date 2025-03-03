@@ -47,7 +47,7 @@ jobs:
       - name: Cat policy file
         run: |
           pwd
-          la -la
+          ls -la
           cat ../infra/s3-static-website/policy-s3-static-website.json
           cat ../../infra/s3-static-website/policy-s3-static-website.json
        #  cat infra/s3-static-website/policy-s3-static-website.json
