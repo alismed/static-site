@@ -56,7 +56,7 @@ jobs:
             github.rest.issues.createComment({
               owner: context.repo.owner,
               issue_number: ${{ github.event.pull_request.number }},
-              repo: ${{ github.event.repository.name }},
+              repo: context.repo.repo,
               body: `${{ env.MSG }}`
             })
 
