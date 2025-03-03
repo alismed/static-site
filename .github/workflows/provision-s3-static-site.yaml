@@ -50,12 +50,11 @@ jobs:
           aws s3api create-bucket --bucket ${{ env.BUCKET_NAME }} --region us-east-1
           aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
 
-      - name: Add Comment
-        run: gh pull_request comment "$NUMBER" --repo "$REPO" --body "$BODY"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          NUMBER: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
-          BODY: >
-            O bucket ${{ env.BUCKET_NAME }} 
-            foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!
+      - name: Add Comment at Pull Request
+        run: |
+          aws codecommit create-comment-on-pull-request \
+            --pull-request-id ${{ github.event.pull_request.number }} \
+            --repository-name ${{ github.event.repository.name }} \
+            --before-commit-id ${{ github.event.before }} \
+            --after-commit-id ${{ github.sha }} \
+            --content "O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!"
