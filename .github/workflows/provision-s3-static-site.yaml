@@ -47,7 +47,7 @@ jobs:
       - name: Cat policy file
         run: |
           pwd
-          ls -la infra/policy-s3-static-website.json
+          ls -la infra/
           cat infra/policy-s3-static-website.json
 
       - name: Create Bucket if variable is not set
