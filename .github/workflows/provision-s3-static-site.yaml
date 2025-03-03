@@ -2,7 +2,7 @@ name: Create S3 Statis Site
 
 on:
   pull_request:
-    types: opened
+    types: merged
     branches:
       - main
 
@@ -21,18 +21,30 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Get Description from Issue
+      - name: Get Description from Pull Request
         run: |
-          export DESCRIPTION=$(echo "${{ github.event.issue.body }}")
+          export DESCRIPTION=$(echo "${{ github.event.pull_request.body }}")
           echo "Description: $DESCRIPTION"
           echo "DESCRIPTION=$DESCRIPTION" >> $GITHUB_ENV
+
+      - name: Get Bucket Name from tfvars
+        run: |
+          export BUCKET_NAME=$(cat infra/s3-static-website/terraform.tfvars | grep bucket_name | cut -d'=' -f2 | tr -d '[:space:]')
+          echo "Bucket Name: $BUCKET_NAME"
+          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
+
+      - name: Get Destroy Bucket from Pull Request
+        run: |
+          export DESTROY_BUCKET=$(echo "${{ github.event.pull_request.body }}" | grep -i 'destroy' | wc -l)
+          echo "Destroy Bucket: $DESTROY_BUCKET"
+          echo "DESTROY_BUCKET=$DESTROY_BUCKET" >> $GITHUB_ENV
 
       - name: Destroy Bucket if variable is set
         if: ${{ env.DESTROY_BUCKET == 'true' }}
         run: |
-          aws s3api delete-bucket --bucket ${{ github.event.issue.number }} --region us-east-1 || true
+          aws s3api delete-bucket --bucket ${{ github.event.pull_request.number }} --region us-east-1 || true
         env:
-          BUCKET_NAME: ${{ github.event.issue.number }}
+          BUCKET_NAME: ${{ github.event.pull_request.number }}
           
       - name: Create Bucket if variable is not set
         if: ${{ env.DESTROY_BUCKET != 'true' }}
@@ -41,13 +53,13 @@ jobs:
           aws s3api put-bucket-policy --bucket ${{ env.BUCKET_NAME }} --policy file://infra/s3-static-website/policy.json
           aws s3 website s3://${{ env.BUCKET_NAME }} --index-document index.html --error-document error.html
         env:
-          BUCKET_NAME: ${{ github.event.issue.number }}      
+          BUCKET_NAME: ${{ github.event.pull_request.number }}      
       
       - name: Add Comment
-        run: gh issue comment "$NUMBER" --repo "$REPO" --body "$BODY"
+        run: gh pull_request comment "$NUMBER" --repo "$REPO" --body "$BODY"
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          NUMBER: ${{ github.event.issue.number }}
+          NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
           BODY: >
             O bucket ${{ env.BUCKET_NAME }} 
