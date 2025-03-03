@@ -48,7 +48,7 @@ jobs:
         run: |
           pwd
           ls -la infra/
-          cat infra/policy-s3-static-website.json
+          cat file://infra/policy-s3-static-website.json
 
       - name: Create Bucket if variable is not set
         if: ${{ env.DESTROY_BUCKET != 'true' }}
