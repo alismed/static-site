@@ -52,7 +52,7 @@ jobs:
 
       - name: Add Comment at Pull Request
         run: |
-          aws codecommit create-comment-on-pull-request \
+          aws codecommit post-comment-for-pull-request \
             --pull-request-id ${{ github.event.pull_request.number }} \
             --repository-name ${{ github.event.repository.name }} \
             --before-commit-id ${{ github.event.before }} \
