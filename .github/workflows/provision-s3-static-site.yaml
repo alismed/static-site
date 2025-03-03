@@ -1,11 +1,10 @@
 name: Create S3 Statis Site
 
-pull_request:
-  branches:
-    - main
-  on:
-    pull_request:
-      types: opened
+on:
+  pull_request:
+    types: opened
+    branches:
+      - main
 
 jobs:
   deploy:
