@@ -39,6 +39,18 @@ jobs:
           echo "Destroy Bucket: $DESTROY_BUCKET"
           echo "DESTROY_BUCKET=$DESTROY_BUCKET" >> $GITHUB_ENV
 
+      - name: Add Comment at GitHub Pull Request
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.createComment({
+              issue_number: ${{ github.event.pull_request.number }},
+              owner: ${{ github.repository_owner }},
+              repo: ${{ github.event.repository.name }},
+              body: `O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!`
+            })
+
       - name: Destroy Bucket if variable is set
         if: ${{ env.DESTROY_BUCKET == 'true' }}
         run: |
@@ -57,6 +69,7 @@ jobs:
           script: |
             github.issues.createComment({
               issue_number: ${{ github.event.pull_request.number }},
+              owner: ${{ github.repository_owner }},
               repo: ${{ github.event.repository.name }},
               body: `O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!`
             })
