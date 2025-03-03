@@ -57,7 +57,7 @@ jobs:
               owner: ${{ github.repository_owner }},
               issue_number: ${{ github.event.pull_request.number }},
               repo: ${{ github.event.repository.name }},
-              body: '${{ env.MSG }}'
+              body: `${{ env.MSG }}`
             })
 
 #     - name: Destroy Bucket if variable is set
