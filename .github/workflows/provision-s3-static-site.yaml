@@ -52,9 +52,6 @@ jobs:
 
       - name: Add Comment at Pull Request
         run: |
-          aws codecommit post-comment-for-pull-request \
-            --pull-request-id ${{ github.event.pull_request.number }} \
-            --repository-name ${{ github.event.repository.name }} \
-            --before-commit-id ${{ github.event.before }} \
-            --after-commit-id ${{ github.sha }} \
-            --content "O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!"
+            curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d '{"body":"O bucket ${{ env.BUCKET_NAME }} foi ${{ env.DESTROY_BUCKET == 'true' && 'destruído' || 'criado' }} com sucesso!"}' \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments"
