@@ -8,8 +8,9 @@ This project is a simple static website hosted in an S3 bucket.
 - Localstack Cli*
 - S3 Bucket pre-built in AWS**
 
-*Not essential, but recommended.
-**Is also possible to create a new bucket in this terraform script.
+### Notes
+- *Not essential, but recommended.
+- **Is also possible to create a new bucket in this terraform script.
 
 ### Localstack
 To use LocalStack on your local machine, add a profile in the aws cli settings:
@@ -25,6 +26,14 @@ The Github Actions is used to run the terraform script and deploy the Glue Job i
 The script only will run if the branch starts with `feature/`.
 
 ### Commands
+```shell
+localstack start -d
+```
+
+```shell
+localstack stop
+```
+
 ```shell
 terraform -chdir="infra/s3-static-website/" init
 ```
