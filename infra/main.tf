@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "static_site_bucket" {
   bucket = var.bucket_name
-  tags   = var.tags
+  tag    = var.tags
 }
 
 resource "aws_s3_bucket_public_access_block" "static_site_bucket" {
@@ -37,11 +37,11 @@ resource "aws_s3_bucket_policy" "static_site_bucket_policy" {
 
 # Upload files from app directory to S3 bucket
 resource "aws_s3_object" "website_files" {
-  for_each = fileset("${path.root}/../app", "**/*")
+  for_each = fileset(var.app_path, "**/*")
 
   bucket       = aws_s3_bucket.static_site_bucket.id
   key          = each.value
-  source       = "${path.root}/../app/${each.value}"
+  source       = "${var.app_path}/${each.value}"
   content_type = lookup(local.mime_types, regex("\\.[^.]+$", each.value), null)
 }
 

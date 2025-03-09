@@ -52,3 +52,9 @@ variable "policy_file" {
   type        = string
   default     = "trust/policy-s3-static-site.json"
 }
+
+variable "app_path" {
+  description = "Path to the app files directory"
+  type        = string
+  default     = "app"  # Default for GitHub Actions
+}
