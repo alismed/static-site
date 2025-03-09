@@ -1,10 +1,6 @@
 resource "aws_s3_bucket" "static_site_bucket" {
   bucket = var.bucket_name
-
-  tags = {
-    Name        = "Static Site Bucket"
-    Environment = "Production"
-  }
+  tag    = var.tags
 }
 
 resource "aws_s3_bucket_public_access_block" "static_site_bucket" {
@@ -23,29 +19,29 @@ resource "aws_s3_bucket_acl" "static_site_bucket" {
   ]
 
   bucket = aws_s3_bucket.static_site_bucket.id
-  acl    = "public-read"
+  acl    = var.acl_type
 }
 
 resource "aws_s3_bucket_ownership_controls" "static_site_bucket" {
   bucket = aws_s3_bucket.static_site_bucket.id
 
   rule {
-    object_ownership = "BucketOwnerPreferred"
+    object_ownership = var.object_ownership
   }
 }
 
 resource "aws_s3_bucket_policy" "static_site_bucket_policy" {
   bucket = aws_s3_bucket.static_site_bucket.id
-  policy = file("trust/policy-s3-static-site.json")
+  policy = file(var.policy_file)
 }
 
 # Upload files from app directory to S3 bucket
 resource "aws_s3_object" "website_files" {
-  for_each = fileset("${path.module}/../app", "**/*")
+  for_each = fileset(var.app_path, "**/*")
 
   bucket       = aws_s3_bucket.static_site_bucket.id
   key          = each.value
-  source       = "${path.module}/../app/${each.value}"
+  source       = "${var.app_path}/${each.value}"
   content_type = lookup(local.mime_types, regex("\\.[^.]+$", each.value), null)
 }
 
@@ -68,11 +64,11 @@ resource "aws_s3_bucket_website_configuration" "static_site" {
   bucket = aws_s3_bucket.static_site_bucket.id
 
   index_document {
-    suffix = "index.html"
+    suffix = var.index_document
   }
 
   error_document {
-    key = "404.html"
+    key = var.error_document
   }
 }
 
