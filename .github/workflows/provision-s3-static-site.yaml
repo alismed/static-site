@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - 'feature/**'
+      - main
 
 jobs:
   deploy:
