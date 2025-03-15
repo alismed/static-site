@@ -1,5 +1,8 @@
-bucket_name    = "my-site-alismed"
-profile        = "default"
-region         = "us-east-1"
-#app_path       = "../app"        # For local development only
-destroy_bucket = true
+bucket_name     = "alismed-my-test-bucket"
+profile         = "default"
+region          = "us-east-1"
+app_path        = "../app"
+destroy_bucket  = false
+use_localstack  = false
+website_domain  = "example.com"
+certificate_arn = ""
