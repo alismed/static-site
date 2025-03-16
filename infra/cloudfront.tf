@@ -1,12 +1,8 @@
-/*
 resource "aws_cloudfront_distribution" "static_site" {
   origin {
-    domain_name = aws_s3_bucket.static_site_bucket.bucket_regional_domain_name
-    origin_id   = "S3-${aws_s3_bucket.static_site_bucket.id}"
-
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.static_site.cloudfront_access_identity_path
-    }
+    domain_name              = aws_s3_bucket.static_site_bucket.bucket_regional_domain_name
+    origin_id                = "S3-${aws_s3_bucket.static_site_bucket.id}"
+    origin_access_control_id = aws_cloudfront_origin_access_control.default.id
   }
 
   enabled             = true
@@ -14,11 +10,9 @@ resource "aws_cloudfront_distribution" "static_site" {
   comment             = "Static site distribution"
   default_root_object = var.index_document
 
-  aliases = [var.website_domain]
-
   default_cache_behavior {
     target_origin_id       = "S3-${aws_s3_bucket.static_site_bucket.id}"
-    viewer_protocol_policy = "redirect-to-https"
+    viewer_protocol_policy = "allow-all" # Permite HTTP
 
     allowed_methods = ["GET", "HEAD"]
     cached_methods  = ["GET", "HEAD"]
@@ -35,12 +29,22 @@ resource "aws_cloudfront_distribution" "static_site" {
     max_ttl     = 86400
   }
 
+  custom_error_response {
+    error_code         = 403
+    response_code      = 404
+    response_page_path = "/${var.error_document}"
+  }
+
+  custom_error_response {
+    error_code         = 404
+    response_code      = 404
+    response_page_path = "/${var.error_document}"
+  }
+
   price_class = "PriceClass_100"
 
   viewer_certificate {
-    acm_certificate_arn      = var.certificate_arn
-    ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1.2_2019"
+    cloudfront_default_certificate = true # Usa certificado padrão do CloudFront
   }
 
   restrictions {
@@ -50,7 +54,11 @@ resource "aws_cloudfront_distribution" "static_site" {
   }
 }
 
-resource "aws_cloudfront_origin_access_identity" "static_site" {
-  comment = "OAI for static site"
+resource "aws_cloudfront_origin_access_control" "default" {
+  name        = "S3 Static Website"
+  description = "CloudFront access to S3"
+
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
 }
-*/

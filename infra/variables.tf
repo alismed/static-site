@@ -58,19 +58,3 @@ variable "app_path" {
   type        = string
   default     = "app" # Default for GitHub Actions
 }
-
-variable "website_domain" {
-  description = "The domain name for the static website"
-  type        = string
-}
-
-variable "certificate_arn" {
-  description = "The ARN of the ACM certificate for the website"
-  type        = string
-}
-
-variable "use_localstack" {
-  description = "Use LocalStack for local testing"
-  type        = bool
-  default     = false
-}
